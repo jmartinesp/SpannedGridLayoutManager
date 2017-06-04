@@ -2,6 +2,8 @@ package com.arasthel.spannedgridlayoutmanager
 
 import android.graphics.PointF
 import android.graphics.Rect
+import android.os.Parcel
+import android.os.Parcelable
 import android.support.v7.widget.LinearSmoothScroller
 import android.support.v7.widget.RecyclerView
 import android.view.View
@@ -89,6 +91,8 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     val childFrames = mutableMapOf<Int, Rect>()
 
+    var pendingScrollToPosition: Int? = null
+
     //==============================================================================================
     //  ~ Override parent
     //==============================================================================================
@@ -117,8 +121,43 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         // If there were any views, detach them so they can be recycled
         detachAndScrapAttachedViews(recycler)
 
-        // Fill from start to visible end
-        fillGap(Direction.END, recycler, state)
+        val pendingScrollToPosition = pendingScrollToPosition
+        if (pendingScrollToPosition != null) {
+
+            scroll = 0
+
+            var lastAddedView: View? = null
+            var position = 0
+            // Keep adding views until reaching the one needed
+            while (findViewByPosition(pendingScrollToPosition) == null && pendingScrollToPosition >= spans) {
+                if (lastAddedView != null) {
+                    // Recycle views to reduce RAM usage
+                    removeAndRecycleView(lastAddedView, recycler)
+                }
+                lastAddedView = makeAndAddView(position, Direction.END, recycler)
+                position++
+            }
+
+            val view = lastAddedView!!
+            val offset = view.top - getTopDecorationHeight(view)
+
+            layoutStart = offset
+            fillAfter(pendingScrollToPosition, recycler, state, size)
+
+            if (orientation == Orientation.VERTICAL) {
+                scrollVerticallyBy(offset, recycler, state)
+            } else {
+                scrollHorizontallyBy(offset, recycler, state)
+            }
+
+            // Scrolling will add more views at end, so add a few at the beginning
+            fillBefore(pendingScrollToPosition, recycler, rectsHelper.itemSize)
+
+            this.pendingScrollToPosition = null
+        } else {
+            // Fill from start to visible end
+            fillGap(Direction.END, recycler, state)
+        }
     }
 
     override fun onLayoutCompleted(state: RecyclerView.State) {
@@ -247,16 +286,15 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected fun recycleChildrenFromStart(direction: Direction, recycler: RecyclerView.Recycler) {
         val childCount = childCount
-        val start = getPaddingStartForOrientation()
+        val start = 0
 
         var detachedCount = 0
 
         for (i in 0 until childCount) {
             val child = getChildAt(i)
-            val childEnd = getChildEnd(child)
-            val childSize = getChildSize(child)
+            val childEnd = getChildEnd(child) + getTopDecorationHeight(child) + getBottomDecorationHeight(child)
 
-            if (childEnd + childSize >= start) {
+            if (childEnd >= start) {
                 break
             }
 
@@ -316,8 +354,8 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
                 if (newChildStart >= childEnd) { break }
 
-                if (newChildStart > newLayoutStart) {
-                    newLayoutStart = newChildStart
+                if (newChildStart + scroll > newLayoutStart) {
+                    newLayoutStart = newChildStart + scroll
                 }
             }
 
@@ -385,13 +423,6 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             return 0
         }
 
-        // Reduce size of way-to-big deltas
-        if (delta < 0) {
-            delta = Math.max(-(size - 1), delta)
-        } else {
-            delta = Math.min(size - 1, delta)
-        }
-
         val canScrollBackwards = (firstVisiblePosition) >= 0 &&
                 0 < scroll &&
                 delta < 0
@@ -412,8 +443,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         recycleChildrenOutOfBounds(direction, recycler)
 
         val absDelta = Math.abs(delta)
-        var start = layoutStart - absDelta
-        start = if (start < 0) 0 else start
+        val start = layoutStart - absDelta
         if (canAddMoreViews(Direction.START, start) || canAddMoreViews(Direction.END, scroll + size + absDelta)) {
             fillGap(direction, recycler, state)
         }
@@ -441,7 +471,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         }
 
         // Correct scroll if it would make the layout scroll out of bounds at the end
-        if (scroll + size > end && (firstVisiblePosition + childCount) == state.itemCount) {
+        if (scroll + size > end && (firstVisiblePosition + childCount + spans) >= state.itemCount) {
             distance -= (end - scroll - size)
             scroll = end - size
         }
@@ -458,10 +488,16 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected fun canAddMoreViews(direction: Direction, limit: Int): Boolean {
         if (direction == Direction.START) {
-            return firstVisiblePosition > 0 && 0 <= limit
+            return firstVisiblePosition > 0 && layoutStart > limit
         } else {
             return limit > layoutEnd
         }
+    }
+
+    override fun scrollToPosition(position: Int) {
+        pendingScrollToPosition = position
+
+        requestLayout()
     }
 
     override fun smoothScrollToPosition(recyclerView: RecyclerView, state: RecyclerView.State, position: Int) {
@@ -631,6 +667,59 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         }
     }
 
+    //==============================================================================================
+    //  ~ Save & Restore State
+    //==============================================================================================
+
+
+    override fun onSaveInstanceState(): Parcelable? {
+        if (childCount > 0) {
+            // Save the actual first visible item
+            val firstVisibleIndex = (0 until childCount).first { getChildAt(it).top >= 0 }
+            val firstVisibleItem = getPosition(getChildAt(firstVisibleIndex))
+            val parcelable = SavedState(firstVisibleItem)
+
+            return parcelable
+        } else {
+            return null
+        }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable) {
+        val savedState = state as? SavedState
+        if (savedState != null) {
+            val firstVisibleItem = savedState.firstVisibleItem
+            scrollToPosition(firstVisibleItem)
+        }
+    }
+
+    class SavedState(val firstVisibleItem: Int): Parcelable {
+
+        companion object {
+
+            @JvmField val CREATOR = object: Parcelable.Creator<SavedState> {
+
+                override fun createFromParcel(source: Parcel): SavedState {
+                    val state = SavedState(source.readInt())
+                    return state
+                }
+
+                override fun newArray(size: Int): Array<SavedState?> {
+                    return arrayOfNulls(size)
+                }
+            }
+        }
+
+        override fun writeToParcel(dest: Parcel, flags: Int) {
+            dest.writeInt(firstVisibleItem)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+    }
+
 }
 
 /**
@@ -753,35 +842,44 @@ open class RectsHelper(val layoutManager: SpannedGridLayoutManager,
      * Remove this rect from the [freeRects], merge and reorder new free rects
      */
     protected fun subtract(subtractedRect: Rect) {
-        val interestedLanes = freeRects.filter { it.intersects(subtractedRect.left, subtractedRect.top, subtractedRect.right, subtractedRect.bottom) }
+        val interestingRects = freeRects.filter { it.isAdjacentTo(subtractedRect) || it.intersects(subtractedRect) }
 
-        interestedLanes.forEach { freeRects.remove(it) }
+        val possibleNewRects = mutableListOf<Rect>()
+        val adjacentRects = mutableListOf<Rect>()
 
-        val newLanes = interestedLanes.flatMap {
-            val rectLeft = Rect(subtractedRect.right, it.top, it.right, it.bottom)
-            val rectRight = Rect(it.left, it.top, subtractedRect.left, it.bottom)
-            val rectTop = Rect(it.left, subtractedRect.bottom, it.right, it.bottom)
-            listOf(rectLeft, rectTop, rectRight).filterNot { it.left == it.right }
-        }
+        for (free in interestingRects) {
+            if (free.isAdjacentTo(subtractedRect) && !subtractedRect.contains(free)) {
+                adjacentRects.add(free)
+            } else {
+                freeRects.remove(free)
 
-        val allRects = mutableListOf<Rect>()
-        allRects.addAll(freeRects)
-        allRects.addAll(newLanes)
+                if (free.left < subtractedRect.left) { // Left
+                    possibleNewRects.add(Rect(free.left, free.top, subtractedRect.left, free.bottom))
+                }
 
-        freeRects.clear()
+                if (free.right > subtractedRect.right) { // Right
+                    possibleNewRects.add(Rect(subtractedRect.right, free.top, free.right, free.bottom))
+                }
 
-        var i = 0
-        while (i < allRects.size) {
-            val lane = allRects[i]
-            val filteredRects = allRects.filter {
-                lane == it || !lane.contains(it)
+                if (free.top < subtractedRect.top) { // Top
+                    possibleNewRects.add(Rect(free.left, free.top, free.right, subtractedRect.top))
+                }
+
+                if (free.bottom > subtractedRect.bottom) { // Bottom
+                    possibleNewRects.add(Rect(free.left, subtractedRect.bottom, free.right, free.bottom))
+                }
             }
-            allRects.clear()
-            allRects.addAll(filteredRects)
-            i++
         }
 
-        freeRects.addAll(allRects)
+        for (rect in possibleNewRects) {
+            val isAdjacent = adjacentRects.firstOrNull { it != rect && it.contains(rect) } != null
+            if (isAdjacent) continue
+
+            val isContained = possibleNewRects.firstOrNull { it != rect && it.contains(rect) } != null
+            if (isContained) continue
+
+            freeRects.add(rect)
+        }
 
         freeRects.sortWith(rectComparator)
     }
