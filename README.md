@@ -1,3 +1,5 @@
+ [![Download](https://api.bintray.com/packages/arasthel/maven/com.arasthel%3Aspannedgridlayoutmanager/images/download.svg) ](https://bintray.com/arasthel/maven/com.arasthel%3Aspannedgridlayoutmanager/_latestVersion)
+
 # SpannedGridLayoutManager
 
 **SpannedGridLayouManager** is a layout manager that will resize and reorder views based on a provided `SpanSize`.
