@@ -23,13 +23,6 @@ When you create a new `SpannedGridLayoutManager` you must provide:
 * An `Orientation`: `Orientation.VERTICAL` or `Orientation.HORIZONTAL`.
 * The **span count** to divide the layout.
 
-**Java** Example:
-
-```java
-SpannedGridLayoutManager staggeredGridLayoutManager = new SpannedGridLayoutManager(
-			SpannedGridLayoutManager.Orientation.VERTICAL, 4);
-recyclerview.setLayoutManager(staggeredGridLayoutManager);
-```
 **Kotlin** Example:
 
 ```kotlin
@@ -38,6 +31,47 @@ val staggeredGridLayoutManager = SpannedGridLayoutManager(
                 spans = 4)
 recyclerview.layoutManager = staggeredGridLayoutManager
 ```
+
+**Java** Example:
+
+```java
+SpannedGridLayoutManager staggeredGridLayoutManager = new SpannedGridLayoutManager(
+			SpannedGridLayoutManager.Orientation.VERTICAL, 4);
+recyclerview.setLayoutManager(staggeredGridLayoutManager);
+```
+
+
+To set the `SpanSize` for each view, you would do it on the `RecyclerView.Adapter`. I would do it in `onBindViewHolder` method, since you have access to `position` and can use several sizes depending on the position or your model's data.
+
+**Kotlin:**
+
+```kotlin
+override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    val width = 1
+    val height = 2
+
+    holder.itemView.layoutParams = RecyclerView.LayoutParams(width, height)
+}
+```
+**Java:**
+
+```java
+@Override
+public void onBindViewHolder(ViewHolder holder, int position) {
+    int width = 1;
+    int height = 2;
+
+    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(width, height));
+}
+```
+
+## Animations
+
+To have animations as shown in the sample, you must:
+
+* Use `setHasStableIds(true)` in your adapter.
+* Override `getItemId` method to return a stable id - that is, it won't change for the same position.
+* Use `adapter.notifyDatasetChanged()` to trigger the layout process.
 
 ## Implementation details
 
