@@ -4,7 +4,7 @@
 
 **SpannedGridLayouManager** is a layout manager that will resize and reorder views based on a provided `SpanSize`.
 
-**IMPORTANT**: as the goal of this LayoutManager is to fill all gaps if possible, views may be placed in an order which may not be related to their positions. That is, if `View #9` can fill a gap before `View #8`, it will be placed in an previous position, ignoring the usual ordering.
+**IMPORTANT**: as the goal of this LayoutManager is to fill all gaps if possible, views may be placed in an order which may not be related to their positions. That is, if `View #9` can fill a gap before `View #8`, it will be placed in an previous position, ignoring the normal ordering.
 
 ![video](art/spannedgridlayout.gif)
 
@@ -44,8 +44,8 @@ recyclerview.layoutManager = staggeredGridLayoutManager
 This library uses `Rects` to find the empty gaps and choose where a view will be placed. The underlying algorithm is explained in [this paper](free_space_algorithm.pdf).
 
 * Initially, there will be **1** free-space **Rect** `(0, 0, spanCount, Int.MAX_VALUE)` for `Orientation:VERTICAL` or `(0, 0, Int.MAX_VALUE, spanCount)` for `Orientation.HORIZONTAL`. 
-* When an item is placed, it will search for the free rects that are **adjacent** to the view's `Rect` or that intersects it.
-* It will iterate over this rects looking for those that are adjacent to the view **and don't contain it**, which will be stored. If a rect doesn't match this criteria, it will be **removed** from the list of free rects and divided in **4 possible sub-rects**: left, top, right, bottom, like this:
+* When a view must added, it will search for the free rects that are **adjacent** to the view's `Rect` or that intersects it.
+* It will iterate over these rects looking for those that are adjacent to the view **and don't contain it**, which will be stored. If a rect doesn't match this criteria, it will be **removed** from the list of free rects and divided in **4 possible sub-rects** - left, top, right, bottom - like this:
 
 ![Sub rects](art/sub_rects.png)
 
