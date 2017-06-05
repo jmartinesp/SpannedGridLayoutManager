@@ -20,16 +20,17 @@ local.properties
 .project
 
 # Android Studio
-/build
+build/*/*
 .idea/
 .gradle
-/*/local.properties
-/*/out
-/*/*/build
-/*/*/production
+*/local.properties
+*/out
+*/*/build
+*/*/production
 *.iml
 *.iws
 *.ipr
 *~
 *.swp.externalNativeBuild
 
+sample/build/
