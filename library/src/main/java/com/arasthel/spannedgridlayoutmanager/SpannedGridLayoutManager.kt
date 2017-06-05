@@ -1,3 +1,7 @@
+/*
+ * Copyright © 2017 Jorge Martín Espinosa
+ */
+
 package com.arasthel.spannedgridlayoutmanager
 
 import android.graphics.PointF
@@ -14,14 +18,12 @@ import android.view.View
  *
  * @param orientation Whether the views will be layouted and scrolled in vertical or horizontal
  * @param spans How many spans does the layout have per row or column
- *
- * @author Jorge Martín Espinosa (Arasthel)
  */
 open class SpannedGridLayoutManager(val orientation: Orientation,
                                val spans: Int) : RecyclerView.LayoutManager() {
 
     //==============================================================================================
-    //  ~ Orientaition & Direction enums
+    //  ~ Orientation & Direction enums
     //==============================================================================================
 
     /**
@@ -91,6 +93,9 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     val childFrames = mutableMapOf<Int, Rect>()
 
+    /**
+     * Temporary variable to store wanted scroll by [scrollToPosition]
+     */
     var pendingScrollToPosition: Int? = null
 
     //==============================================================================================
@@ -122,36 +127,34 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         detachAndScrapAttachedViews(recycler)
 
         val pendingScrollToPosition = pendingScrollToPosition
-        if (pendingScrollToPosition != null) {
+        if (pendingScrollToPosition != null && pendingScrollToPosition >= spans) {
 
             scroll = 0
 
             var lastAddedView: View? = null
             var position = 0
             // Keep adding views until reaching the one needed
-            while (findViewByPosition(pendingScrollToPosition) == null && pendingScrollToPosition >= spans) {
+            while (findViewByPosition(pendingScrollToPosition) == null) {
                 if (lastAddedView != null) {
                     // Recycle views to reduce RAM usage
+                    updateEdgesWithRemovedChild(lastAddedView, Direction.START)
                     removeAndRecycleView(lastAddedView, recycler)
                 }
                 lastAddedView = makeAndAddView(position, Direction.END, recycler)
+                updateEdgesWithNewChild(lastAddedView!!)
                 position++
             }
 
             val view = lastAddedView!!
             val offset = view.top - getTopDecorationHeight(view)
+            removeAndRecycleView(view, recycler)
 
             layoutStart = offset
+            scrollBy(-offset, state)
             fillAfter(pendingScrollToPosition, recycler, state, size)
 
-            if (orientation == Orientation.VERTICAL) {
-                scrollVerticallyBy(offset, recycler, state)
-            } else {
-                scrollHorizontallyBy(offset, recycler, state)
-            }
-
             // Scrolling will add more views at end, so add a few at the beginning
-            fillBefore(pendingScrollToPosition, recycler, rectsHelper.itemSize)
+            fillBefore(pendingScrollToPosition - 1, recycler, size)
 
             this.pendingScrollToPosition = null
         } else {
@@ -419,7 +422,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         var delta = delta
 
         // If there are no view or no movement, return
-        if (childCount == 0 || delta == 0) {
+        if (delta == 0) {
             return 0
         }
 
