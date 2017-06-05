@@ -10,7 +10,7 @@
 
 Gradle dependency:
 
-```
+```groovy
 dependencies {
 	compile 'com.arasthel:spannedgridlayoutmanager:1.0.0'
 }
@@ -23,14 +23,14 @@ When you create a new `SpannedGridLayoutManager` you must provide:
 
 **Java** Example:
 
-```
+```java
 SpannedGridLayoutManager staggeredGridLayoutManager = new SpannedGridLayoutManager(
 			SpannedGridLayoutManager.Orientation.VERTICAL, 4);
 recyclerview.setLayoutManager(staggeredGridLayoutManager);
 ```
 **Kotlin** Example:
 
-```
+```kotlin
 val staggeredGridLayoutManager = SpannedGridLayoutManager(
                 orientation = SpannedGridLayoutManager.Orientation.VERTICAL, 
                 spans = 4)
