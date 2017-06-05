@@ -1,10 +1,7 @@
 package com.arasthel.spannedgridlayoutmanager.sample
 
 import android.support.v7.widget.RecyclerView
-import android.view.Menu
-import android.view.MenuItem
 import com.arasthel.spannedgridlayoutmanager.SpannedGridLayoutManager
-import java.util.*
 
 /**
  * Created by Jorge Martín on 24/5/17.
@@ -25,22 +22,6 @@ class MainActivity: android.support.v7.app.AppCompatActivity() {
 
         val adapter = GridItemAdapter()
         recyclerview.adapter = adapter
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-
-        menuInflater.inflate(R.menu.main_menu, menu)
-
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when (item.itemId) {
-            R.id.scrollTo -> recyclerview.layoutManager.scrollToPosition(Random().nextInt(500))
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
 }
