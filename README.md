@@ -1,4 +1,4 @@
- [![Download](https://api.bintray.com/packages/arasthel/maven/com.arasthel%3Aspannedgridlayoutmanager/images/download.svg) ](https://bintray.com/arasthel/maven/com.arasthel%3Aspannedgridlayoutmanager/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/arasthel/maven/spannedgridlayoutmanager/images/download.svg) ](https://bintray.com/arasthel/maven/spannedgridlayoutmanager/_latestVersion)
 
 # SpannedGridLayoutManager
 
