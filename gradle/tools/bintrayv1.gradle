@@ -20,8 +20,12 @@ if (project.hasProperty("android")) { // Android libraries
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
+
+    // Always recreate documentation
+    outputs.upToDateWhen { return false }
+
     classifier = 'javadoc'
-    from javadoc.destinationDir
+    from new File("$rootDir/docs")
 }
 
 artifacts {
