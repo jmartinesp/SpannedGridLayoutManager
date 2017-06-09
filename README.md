@@ -1,4 +1,4 @@
-[ ![Download](https://api.bintray.com/packages/arasthel/maven/spannedgridlayoutmanager/images/download.svg) ](https://bintray.com/arasthel/maven/spannedgridlayoutmanager/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/arasthel/maven/spannedgridlayoutmanager/images/download.svg) ](https://bintray.com/arasthel/maven/spannedgridlayoutmanager/_latestVersion) [![API](https://img.shields.io/badge/API-17%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=17) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # SpannedGridLayoutManager
 
@@ -26,18 +26,18 @@ When you create a new `SpannedGridLayoutManager` you must provide:
 **Kotlin** Example:
 
 ```kotlin
-val staggeredGridLayoutManager = SpannedGridLayoutManager(
+val spannedGridLayoutManager = SpannedGridLayoutManager(
                 orientation = SpannedGridLayoutManager.Orientation.VERTICAL, 
                 spans = 4)
-recyclerview.layoutManager = staggeredGridLayoutManager
+recyclerview.layoutManager = spannedGridLayoutManager
 ```
 
 **Java** Example:
 
 ```java
-SpannedGridLayoutManager staggeredGridLayoutManager = new SpannedGridLayoutManager(
+SpannedGridLayoutManager spannedGridLayoutManager = new SpannedGridLayoutManager(
 			SpannedGridLayoutManager.Orientation.VERTICAL, 4);
-recyclerview.setLayoutManager(staggeredGridLayoutManager);
+recyclerview.setLayoutManager(spannedGridLayoutManager);
 ```
 
 
