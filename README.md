@@ -14,7 +14,7 @@ Gradle dependency:
 
 ```groovy
 dependencies {
-	compile 'com.arasthel:spannedgridlayoutmanager:1.0.0'
+	compile 'com.arasthel:spannedgridlayoutmanager:1.0.1'
 }
 ```
 
@@ -77,7 +77,7 @@ To have animations as shown in the sample, you must:
 
 This library uses `Rects` to find the empty gaps and choose where a view will be placed. The underlying algorithm is explained in [this paper](free_space_algorithm.pdf).
 
-* Initially, there will be **1** free-space **Rect** `(0, 0, spanCount, Int.MAX_VALUE)` for `Orientation:VERTICAL` or `(0, 0, Int.MAX_VALUE, spanCount)` for `Orientation.HORIZONTAL`. 
+* Initially, there will be **1** free-space **Rect** `(0, 0, spanCount, Int.MAX_VALUE)` for `Orientation.VERTICAL` or `(0, 0, Int.MAX_VALUE, spanCount)` for `Orientation.HORIZONTAL`. 
 * When a view must added, it will search for the free rects that are **adjacent** to the view's `Rect` or that intersects it.
 * It will iterate over these rects looking for those that are adjacent to the view **and don't contain it**, which will be stored. If a rect doesn't match this criteria, it will be **removed** from the list of free rects and divided in **4 possible sub-rects** - left, top, right, bottom - like this:
 
