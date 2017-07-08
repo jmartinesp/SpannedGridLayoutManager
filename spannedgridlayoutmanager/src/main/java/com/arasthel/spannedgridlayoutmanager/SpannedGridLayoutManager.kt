@@ -36,7 +36,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     }
 
     /**
-     * Direction of scroll or layouting process
+     * Direction of scroll for layouting process
      * <li>START</li>
      * <li>END</li>
      */
