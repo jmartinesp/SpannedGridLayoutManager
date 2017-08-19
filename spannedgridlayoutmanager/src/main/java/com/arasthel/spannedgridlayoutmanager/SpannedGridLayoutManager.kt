@@ -141,7 +141,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
                     removeAndRecycleView(lastAddedView, recycler)
                 }
                 lastAddedView = makeAndAddView(position, Direction.END, recycler)
-                updateEdgesWithNewChild(lastAddedView!!)
+                updateEdgesWithNewChild(lastAddedView)
                 position++
             }
 

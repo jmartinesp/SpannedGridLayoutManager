@@ -8,7 +8,7 @@ import com.arasthel.spannedgridlayoutmanager.SpannedGridLayoutManager
  */
 class MainActivity: android.support.v7.app.AppCompatActivity() {
 
-    val recyclerview: RecyclerView by lazy { findViewById(R.id.recyclerView) as RecyclerView }
+    private val recyclerView: RecyclerView by lazy { findViewById<RecyclerView>(R.id.recyclerView) }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,12 +16,12 @@ class MainActivity: android.support.v7.app.AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val staggeredGridLayoutManager = SpannedGridLayoutManager(orientation = SpannedGridLayoutManager.Orientation.VERTICAL, spans = 4)
-        recyclerview.layoutManager = staggeredGridLayoutManager
+        recyclerView.layoutManager = staggeredGridLayoutManager
 
-        recyclerview.addItemDecoration(SpaceItemDecorator(left = 10, top = 10, right = 10, bottom = 10))
+        recyclerView.addItemDecoration(SpaceItemDecorator(left = 10, top = 10, right = 10, bottom = 10))
 
         val adapter = GridItemAdapter()
-        recyclerview.adapter = adapter
+        recyclerView.adapter = adapter
     }
 
 }

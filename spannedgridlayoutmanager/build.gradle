@@ -47,12 +47,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.1"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName libraryVersion
     }
@@ -69,8 +69,8 @@ tasks.withType(Javadoc) {
 }
 
 dependencies {
-    compile "com.android.support:recyclerview-v7:$support_library_version"
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    api "com.android.support:recyclerview-v7:$support_library_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }
 
 // Bintray Upload
