@@ -168,7 +168,8 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
         // Check if after changes in layout we aren't out of its bounds
         val overScroll = scroll + size - layoutEnd - getPaddingEndForOrientation()
-        if (lastVisiblePosition == state.itemCount - 1 && overScroll > 0) {
+        val allItemsInScreen = firstVisiblePosition == 0 && lastVisiblePosition == state.itemCount - 1
+        if (!allItemsInScreen && overScroll > 0) {
             // If we are, fix it
             scrollBy(overScroll, state)
         }
