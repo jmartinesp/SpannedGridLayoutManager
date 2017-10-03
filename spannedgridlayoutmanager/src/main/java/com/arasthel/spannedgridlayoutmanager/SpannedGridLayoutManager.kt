@@ -837,9 +837,14 @@ open class RectsHelper(val layoutManager: SpannedGridLayoutManager,
      * Find a valid free rect for the given span size
      */
     protected fun findRectForSpanSize(spanSize: SpanSize): Rect {
-        val lane = freeRects.first {
-            val itemRect = Rect(it.left, it.top, it.left+spanSize.width, it.top + spanSize.height)
-            it.contains(itemRect)
+        var lane: Rect? = null
+        try {
+            lane = freeRects.first {
+                val itemRect = Rect(it.left, it.top, it.left + spanSize.width, it.top + spanSize.height)
+                it.contains(itemRect)
+            }
+        } catch (e: NoSuchElementException) {
+            throw SpanSizeException()
         }
 
         return Rect(lane.left, lane.top, lane.left+spanSize.width, lane.top + spanSize.height)
