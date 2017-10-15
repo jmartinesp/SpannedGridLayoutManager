@@ -4,6 +4,8 @@ import android.graphics.Color
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
+import com.arasthel.spannedgridlayoutmanager.SpanLayoutParams
+import com.arasthel.spannedgridlayoutmanager.SpanSize
 
 /**
  * Created by Jorge Martín on 24/5/17.
@@ -27,9 +29,9 @@ class GridItemAdapter: RecyclerView.Adapter<GridItemViewHolder>() {
         val width = if (clickedItems[position]) 2 else 1
         val height = if (clickedItems[position]) 2 else 1
 
-        (holder.itemView as? GridItemView)?.setTitle("$position")
-
-        holder.itemView.layoutParams = RecyclerView.LayoutParams(width, height)
+        //(holder.itemView as? GridItemView)?.setTitle("$position")
+        val spanSize = SpanSize(width, height)
+        holder.itemView.layoutParams = SpanLayoutParams(spanSize)
         holder.itemView.setBackgroundColor(
                 colors[position % colors.size]
         )
@@ -48,8 +50,8 @@ class GridItemAdapter: RecyclerView.Adapter<GridItemViewHolder>() {
         return 500
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): GridItemViewHolder {
-        val gridItemView = GridItemView(parent!!.context)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GridItemViewHolder {
+        val gridItemView = View.inflate(parent.context, R.layout.complex_item, null)
 
         return GridItemViewHolder(gridItemView)
     }

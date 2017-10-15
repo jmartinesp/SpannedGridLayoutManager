@@ -4,13 +4,16 @@
 
 package com.arasthel.spannedgridlayoutmanager
 
+import android.content.Context
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Parcel
 import android.os.Parcelable
 import android.support.v7.widget.LinearSmoothScroller
 import android.support.v7.widget.RecyclerView
+import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 
 /**
  * A [android.support.v7.widget.RecyclerView.LayoutManager] which layouts and orders its views
@@ -184,9 +187,14 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
         val itemWidth = freeRectsHelper.itemSize
         val itemHeight = freeRectsHelper.itemSize
-        val layoutParams = view.layoutParams
 
-        val spanSize = SpanSize(layoutParams.width, layoutParams.height)
+        if (view.layoutParams !is SpanLayoutParams) {
+            throw TypeCastException("View LayoutParams must be of type 'SpanLayoutParams'")
+        }
+
+        val layoutParams = (view.layoutParams as SpanLayoutParams)
+
+        val spanSize = layoutParams.spanSize
         // This rect contains just the row and column number - i.e.: [0, 0, 1, 1]
         val rect = freeRectsHelper.findRect(position, spanSize)
 
@@ -197,7 +205,11 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         val bottom = rect.bottom * itemHeight
 
         // Measure child
-        measureChildWithMargins(view, right - left, bottom - top)
+        val width = right - left
+        val height = bottom - top
+        layoutParams.width = width
+        layoutParams.height = height
+        measureChildWithMargins(view, width, height)
 
         // Remove free space from the helper
         freeRectsHelper.pushRect(position, rect)
@@ -905,3 +917,19 @@ open class RectsHelper(val layoutManager: SpannedGridLayoutManager,
  * Helper to store width and height spans
  */
 class SpanSize(val width: Int, val height: Int)
+
+class SpanLayoutParams: RecyclerView.LayoutParams {
+
+    var spanSize = SpanSize(width = 0, height = 0)
+
+    constructor(spanSize: SpanSize): super(0, 0) {
+        this.spanSize = spanSize
+    }
+
+    constructor(context: Context, attrs: AttributeSet): super(context, attrs)
+    constructor(width: Int, height: Int): super(width, height)
+    constructor(source: ViewGroup.MarginLayoutParams): super(source)
+    constructor(source: ViewGroup.LayoutParams): super(source)
+    constructor(source: RecyclerView.LayoutParams): super(source)
+
+}
