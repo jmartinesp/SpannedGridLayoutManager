@@ -14,7 +14,7 @@ Gradle dependency:
 
 ```groovy
 dependencies {
-	compile 'com.arasthel:spannedgridlayoutmanager:1.0.2'
+	compile 'com.arasthel:spannedgridlayoutmanager:2.0.0'
 }
 ```
 
@@ -50,7 +50,7 @@ override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val width = 1
     val height = 2
 
-    holder.itemView.layoutParams = RecyclerView.LayoutParams(width, height)
+    holder.itemView.layoutParams = SpanLayoutParams(SpanSize(width, height))
 }
 ```
 **Java:**
@@ -61,9 +61,26 @@ public void onBindViewHolder(ViewHolder holder, int position) {
     int width = 1;
     int height = 2;
 
-    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(width, height));
+    holder.itemView.setLayoutParams(new SpanLayoutParams(new SpanSize(width, height)));
 }
 ```
+
+## Migrating from 1.X to 2.X
+
+Due to critical layout issues, the API for using SpanSizes had to change. The only changes you should have to do in your code are:
+
+```kotlin
+    val width = 1
+    val height = 2
+
+    // OLD
+    // holder.itemView.layoutParams = RecyclerView.LayoutParams(width, height)
+
+    // NEW
+    holder.itemView.layoutParams = SpanLayoutParams(SpanSize(width, height))
+```
+
+Just use the new `SpanLayoutParams` instead of generic `RecyclerView.LayoutParams`.
 
 ## Animations
 
