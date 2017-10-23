@@ -102,6 +102,16 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     var pendingScrollToPosition: Int? = null
 
     //==============================================================================================
+    //  ~ Initializer
+    //==============================================================================================
+
+    init {
+        if (spans < 1) {
+            throw InvalidMaxSpansException(spans)
+        }
+    }
+
+    //==============================================================================================
     //  ~ Override parent
     //==============================================================================================
 
@@ -195,6 +205,13 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         val layoutParams = (view.layoutParams as SpanLayoutParams)
 
         val spanSize = layoutParams.spanSize
+
+        val usedSpan = if (orientation == Orientation.HORIZONTAL) spanSize.height else spanSize.width
+
+        if (usedSpan > this.spans || usedSpan < 1) {
+            throw InvalidSpanSizeException(errorSize = usedSpan, maxSpanSize = spans)
+        }
+
         // This rect contains just the row and column number - i.e.: [0, 0, 1, 1]
         val rect = freeRectsHelper.findRect(position, spanSize)
 

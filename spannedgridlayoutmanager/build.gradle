@@ -12,6 +12,9 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaAndroidTask) {
         url = new URL("https://developer.android.com/reference/")
     }
 
+    // Uncomment when dokka 0.9.16 is out
+    // includeNonPublic = false
+
     // Always recreate documentation
     outputs.upToDateWhen { return false }
 }

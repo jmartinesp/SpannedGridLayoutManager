@@ -29,7 +29,7 @@ class GridItemAdapter: RecyclerView.Adapter<GridItemViewHolder>() {
         val width = if (clickedItems[position]) 2 else 1
         val height = if (clickedItems[position]) 2 else 1
 
-        //(holder.itemView as? GridItemView)?.setTitle("$position")
+        (holder.itemView as? GridItemView)?.setTitle("$position")
         val spanSize = SpanSize(width, height)
         holder.itemView.layoutParams = SpanLayoutParams(spanSize)
         holder.itemView.setBackgroundColor(
@@ -51,12 +51,10 @@ class GridItemAdapter: RecyclerView.Adapter<GridItemViewHolder>() {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GridItemViewHolder {
-        val gridItemView = View.inflate(parent.context, R.layout.complex_item, null)
+        val gridItemView = GridItemView(parent.context)
 
         return GridItemViewHolder(gridItemView)
     }
 }
 
-class GridItemViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
-
-}
+class GridItemViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView)
