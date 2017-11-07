@@ -2,6 +2,7 @@ package com.arasthel.spannedgridlayoutmanager.sample
 
 import android.content.Context
 import android.view.Gravity
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 
@@ -15,7 +16,7 @@ class GridItemView(context: Context?) : FrameLayout(context) {
     init {
         title = TextView(context)
         title.gravity = Gravity.CENTER
-        addView(title, 100, 100)
+        addView(title, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 
     fun setTitle(text: String) {

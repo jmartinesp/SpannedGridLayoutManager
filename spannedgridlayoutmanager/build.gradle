@@ -5,7 +5,7 @@ apply plugin: 'org.jetbrains.dokka-android'
 task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaAndroidTask) {
     delete "$rootDir/docs"
 
-    outputFormat = 'javadoc'
+    outputFormat = 'html'
     outputDirectory = "$rootDir/docs"
 
     externalDocumentationLink {

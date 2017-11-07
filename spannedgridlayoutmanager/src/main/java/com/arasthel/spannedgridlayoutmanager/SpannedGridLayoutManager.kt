@@ -12,6 +12,7 @@ import android.os.Parcelable
 import android.support.v7.widget.LinearSmoothScroller
 import android.support.v7.widget.RecyclerView
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 
@@ -100,6 +101,13 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      * Temporary variable to store wanted scroll by [scrollToPosition]
      */
     var pendingScrollToPosition: Int? = null
+
+    /**
+     * Whether item order will be kept along re-creations of this LayoutManager with different
+     * configurations of not, so . Default is false. Only set to true if this condition is met.
+     * Otherwise, scroll bugs will happen.
+     */
+    var itemOrderIsStable = false
 
     //==============================================================================================
     //  ~ Initializer
@@ -221,9 +229,12 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         val top = rect.top * itemHeight
         val bottom = rect.bottom * itemHeight
 
+        var insetsRect = Rect()
+        calculateItemDecorationsForChild(view, insetsRect)
+
         // Measure child
-        val width = right - left
-        val height = bottom - top
+        val width = right - left - insetsRect.left - insetsRect.right
+        val height = bottom - top - insetsRect.top - insetsRect.bottom
         layoutParams.width = width
         layoutParams.height = height
         measureChildWithMargins(view, width, height)
@@ -716,11 +727,17 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     //  ~ Save & Restore State
     //==============================================================================================
 
-
     override fun onSaveInstanceState(): Parcelable? {
-        if (childCount > 0) {
+        if (itemOrderIsStable && childCount > 0) {
             // Save the actual first visible item
-            val firstVisibleIndex = (0 until childCount).first { getChildAt(it).top >= 0 }
+            val maxTopValue = (0 until childCount).map { getChildAt(it).top }.min()
+            val firstVisibleIndex = (0 until childCount).first { getChildAt(it).top == maxTopValue }
+
+            /*if (firstVisibleIndex == null) {
+                for (i in (0 until childCount)) { Log.d("Test", "Item $i: ${getChildAt(i).top}") }
+                firstVisibleIndex = 0
+            }*/
+
             val firstVisibleItem = getPosition(getChildAt(firstVisibleIndex))
             val parcelable = SavedState(firstVisibleItem)
 

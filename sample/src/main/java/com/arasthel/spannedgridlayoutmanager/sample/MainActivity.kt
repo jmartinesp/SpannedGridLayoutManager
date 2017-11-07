@@ -15,8 +15,10 @@ class MainActivity: android.support.v7.app.AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        val staggeredGridLayoutManager = SpannedGridLayoutManager(orientation = SpannedGridLayoutManager.Orientation.VERTICAL, spans = 4)
-        recyclerview.layoutManager = staggeredGridLayoutManager
+        val spannedGridLayoutManager = SpannedGridLayoutManager(orientation = SpannedGridLayoutManager.Orientation.VERTICAL, spans = 4)
+        spannedGridLayoutManager.itemOrderIsStable = true
+
+        recyclerview.layoutManager = spannedGridLayoutManager
 
         recyclerview.addItemDecoration(SpaceItemDecorator(left = 10, top = 10, right = 10, bottom = 10))
 
