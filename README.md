@@ -14,7 +14,7 @@ Gradle dependency:
 
 ```groovy
 dependencies {
-	compile 'com.arasthel:spannedgridlayoutmanager:2.0.0'
+	compile 'com.arasthel:spannedgridlayoutmanager:2.0.1'
 }
 ```
 
@@ -63,6 +63,16 @@ public void onBindViewHolder(ViewHolder holder, int position) {
 
     holder.itemView.setLayoutParams(new SpanLayoutParams(new SpanSize(width, height)));
 }
+```
+
+### About restoring scroll position:
+
+As this *LayoutManager* may change the order in screen of its items, it has some issues with restoring scroll position when the sizes of the items change drastically. To work around this, restoring the scroll position when recreating this *LayoutManager* is disabled by default.
+
+If you are **sure** that the position of the items won't change much, you can enable it again using:
+
+```kotlin
+spannedLayoutManager.itemOrderIsStable = true
 ```
 
 ## Migrating from 1.X to 2.X

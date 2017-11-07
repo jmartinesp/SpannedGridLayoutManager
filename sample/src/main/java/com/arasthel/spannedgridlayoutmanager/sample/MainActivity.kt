@@ -8,7 +8,7 @@ import com.arasthel.spannedgridlayoutmanager.SpannedGridLayoutManager
  */
 class MainActivity: android.support.v7.app.AppCompatActivity() {
 
-    val recyclerview: RecyclerView by lazy { findViewById(R.id.recyclerView) as RecyclerView }
+    val recyclerview: RecyclerView by lazy { findViewById<RecyclerView>(R.id.recyclerView) }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)

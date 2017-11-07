@@ -12,7 +12,6 @@ import android.os.Parcelable
 import android.support.v7.widget.LinearSmoothScroller
 import android.support.v7.widget.RecyclerView
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 
@@ -732,11 +731,6 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             // Save the actual first visible item
             val maxTopValue = (0 until childCount).map { getChildAt(it).top }.min()
             val firstVisibleIndex = (0 until childCount).first { getChildAt(it).top == maxTopValue }
-
-            /*if (firstVisibleIndex == null) {
-                for (i in (0 until childCount)) { Log.d("Test", "Item $i: ${getChildAt(i).top}") }
-                firstVisibleIndex = 0
-            }*/
 
             val firstVisibleItem = getPosition(getChildAt(firstVisibleIndex))
             val parcelable = SavedState(firstVisibleItem)

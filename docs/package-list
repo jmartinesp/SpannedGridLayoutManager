@@ -1,5 +1,0 @@
-$dokka.format:html
-$dokka.linkExtension:html
-$dokka.location:com.arasthel.spannedgridlayoutmanager$intersects(android.graphics.Rect, android.graphics.Rect)com.arasthel.spannedgridlayoutmanager/android.graphics.-rect/intersects.html
-$dokka.location:com.arasthel.spannedgridlayoutmanager$isAdjacentTo(android.graphics.Rect, android.graphics.Rect)com.arasthel.spannedgridlayoutmanager/android.graphics.-rect/is-adjacent-to.html
-com.arasthel.spannedgridlayoutmanager
