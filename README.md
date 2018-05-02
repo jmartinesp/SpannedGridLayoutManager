@@ -14,7 +14,7 @@ Gradle dependency:
 
 ```groovy
 dependencies {
-	compile 'com.arasthel:spannedgridlayoutmanager:2.0.1'
+	implementation 'com.arasthel:spannedgridlayoutmanager:2.0.2'
 }
 ```
 

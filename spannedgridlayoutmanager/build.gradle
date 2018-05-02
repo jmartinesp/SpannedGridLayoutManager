@@ -12,8 +12,7 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaAndroidTask) {
         url = new URL("https://developer.android.com/reference/")
     }
 
-    // Uncomment when dokka 0.9.16 is out
-    // includeNonPublic = false
+    includeNonPublic = false
 
     // Always recreate documentation
     outputs.upToDateWhen { return false }
@@ -38,7 +37,7 @@ ext {
     siteUrl = 'https://github.com/Arasthel/SpannedGridLayoutManager'
     gitUrl = 'https://github.com/Arasthel/SpannedGridLayoutManager.git'
 
-    libraryVersion = '2.0.1'
+    libraryVersion = '2.0.2'
 
     developerId = 'Arasthel'
     developerName = 'Jorge Martín Epsinosa'
@@ -51,7 +50,7 @@ ext {
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 14
@@ -72,8 +71,8 @@ tasks.withType(Javadoc) {
 }
 
 dependencies {
-    compile "com.android.support:recyclerview-v7:$support_library_version"
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation "com.android.support:recyclerview-v7:$support_library_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }
 
 // Bintray Upload

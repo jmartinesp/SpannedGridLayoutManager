@@ -587,13 +587,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected fun fillBefore(position: Int, recycler: RecyclerView.Recycler, extraSpace: Int) {
         var position = position
-        var limit = scroll - extraSpace
-
-        val start = 0
-
-        if (limit < start) {
-            limit = start
-        }
+        val limit = scroll - extraSpace
 
         while (canAddMoreViews(Direction.START, limit) && position >= 0) {
             makeAndAddView(position, Direction.START, recycler)
@@ -649,7 +643,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         var right = childFrames[position]!!.right + decoration
 
         if (orientation == Orientation.HORIZONTAL) {
-            right -= scroll
+            right -= scroll - getPaddingStartForOrientation()
         }
 
         return right
@@ -673,7 +667,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         var bottom = childFrames[position]!!.bottom + decoration
 
         if (orientation == Orientation.VERTICAL) {
-            bottom -= scroll
+            bottom -= scroll - getPaddingStartForOrientation()
         }
         return bottom
     }
