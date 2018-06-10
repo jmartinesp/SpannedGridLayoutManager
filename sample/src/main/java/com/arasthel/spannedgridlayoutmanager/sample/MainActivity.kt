@@ -15,12 +15,15 @@ class MainActivity: android.support.v7.app.AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        val spannedGridLayoutManager = SpannedGridLayoutManager(orientation = SpannedGridLayoutManager.Orientation.VERTICAL, spans = 4)
+        val spannedGridLayoutManager = SpannedGridLayoutManager(orientation = SpannedGridLayoutManager.Orientation.VERTICAL, spans = 2)
         spannedGridLayoutManager.itemOrderIsStable = true
 
-        recyclerview.layoutManager = spannedGridLayoutManager
+        /**
+         * if you want use a custom height for item
+         * spannedGridLayoutManager.setCustomHeight(200)
+         */
 
-        recyclerview.addItemDecoration(SpaceItemDecorator(left = 10, top = 10, right = 10, bottom = 10))
+        recyclerview.layoutManager = spannedGridLayoutManager
 
         val adapter = GridItemAdapter()
         recyclerview.adapter = adapter

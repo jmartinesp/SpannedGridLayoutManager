@@ -108,6 +108,11 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     var itemOrderIsStable = false
 
+    /**
+     * Custom height of item
+     */
+    var mCustomHeight : Int = 0
+
     //==============================================================================================
     //  ~ Initializer
     //==============================================================================================
@@ -195,6 +200,10 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         }
     }
 
+    fun setCustomHeight(height: Int) {
+        this.mCustomHeight = height
+    }
+
     /**
      * Measure child view using [RectsHelper]
      */
@@ -203,7 +212,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         val freeRectsHelper = this.rectsHelper
 
         val itemWidth = freeRectsHelper.itemSize
-        val itemHeight = freeRectsHelper.itemSize
+        val itemHeight = if(mCustomHeight != null && mCustomHeight!! > 0) mCustomHeight else freeRectsHelper.itemSize
 
         if (view.layoutParams !is SpanLayoutParams) {
             throw TypeCastException("View LayoutParams must be of type 'SpanLayoutParams'")
