@@ -384,8 +384,8 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      * Update layout edges when views are recycled
      */
     protected fun updateEdgesWithRemovedChild(view: View, direction: Direction) {
-        val childStart = getChildStart(view)
-        val childEnd = getChildEnd(view)
+        val childStart = getChildStart(view) + scroll
+        val childEnd = getChildEnd(view) + scroll
 
         if (direction == Direction.END) { // Removed from start
             var newLayoutStart = childStart
@@ -393,12 +393,12 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             for (i in (0 until childCount)) {
                 val siblingChild = getChildAt(i)
 
-                val newChildStart = getChildStart(siblingChild)
+                val newChildStart = getChildStart(siblingChild) + scroll
 
                 if (newChildStart >= childEnd) { break }
 
-                if (newChildStart + scroll > newLayoutStart) {
-                    newLayoutStart = newChildStart + scroll
+                if (newChildStart > newLayoutStart) {
+                    newLayoutStart = newChildStart
                 }
             }
 
@@ -530,10 +530,10 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      * Checks if more views can be added between the current scroll and a limit
      */
     protected fun canAddMoreViews(direction: Direction, limit: Int): Boolean {
-        if (direction == Direction.START) {
-            return firstVisiblePosition > 0 && layoutStart > limit
+        return if (direction == Direction.START) {
+            firstVisiblePosition > 0 && limit < layoutStart
         } else {
-            return limit > layoutEnd
+            limit > layoutEnd
         }
     }
 
