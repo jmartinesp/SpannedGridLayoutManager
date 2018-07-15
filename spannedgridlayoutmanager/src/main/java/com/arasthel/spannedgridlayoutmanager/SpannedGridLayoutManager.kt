@@ -587,7 +587,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected fun fillBefore(position: Int, recycler: RecyclerView.Recycler, extraSpace: Int) {
         var position = position
-        val limit = scroll - extraSpace
+        val limit = getPaddingStartForOrientation() + scroll - extraSpace
 
         while (canAddMoreViews(Direction.START, limit) && position >= 0) {
             makeAndAddView(position, Direction.START, recycler)
@@ -603,7 +603,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected fun fillAfter(position: Int, recycler: RecyclerView.Recycler, state: RecyclerView.State, extraSpace: Int) {
         var position = position
-        val limit = scroll + size + extraSpace
+        val limit = getPaddingStartForOrientation() + scroll + size + extraSpace
 
         while (canAddMoreViews(Direction.END, limit) && position < state.itemCount) {
             makeAndAddView(position, Direction.END, recycler)
