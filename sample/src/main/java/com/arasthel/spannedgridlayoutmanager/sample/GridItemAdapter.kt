@@ -58,4 +58,4 @@ class GridItemAdapter: RecyclerView.Adapter<GridItemViewHolder>() {
     }
 }
 
-class GridItemViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView)
+class GridItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)

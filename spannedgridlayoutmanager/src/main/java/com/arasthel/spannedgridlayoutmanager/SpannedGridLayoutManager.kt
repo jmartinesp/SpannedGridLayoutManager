@@ -67,7 +67,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     val firstVisiblePosition: Int get() {
         if (childCount == 0) { return 0 }
-        return getPosition(getChildAt(0))
+        return getPosition(getChildAt(0)!!)
     }
 
     /**
@@ -75,7 +75,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     val lastVisiblePosition: Int get() {
         if (childCount == 0) { return 0 }
-        return getPosition(getChildAt(childCount-1))
+        return getPosition(getChildAt(childCount-1)!!)
     }
 
     /**
@@ -341,7 +341,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         var detachedCount = 0
 
         for (i in 0 until childCount) {
-            val child = getChildAt(i)
+            val child = getChildAt(i)!!
             val childEnd = getChildEnd(child)
 
             if (childEnd >= start) {
@@ -352,7 +352,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         }
 
         while (detachedCount-- > 0) {
-            val child = getChildAt(0)
+            val child = getChildAt(0)!!
             removeAndRecycleView(child, recycler)
             updateEdgesWithRemovedChild(child, direction)
         }
@@ -369,7 +369,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         var detachedCount = 0
 
         for (i in (0 until childCount).reversed()) {
-            val child = getChildAt(i)
+            val child = getChildAt(i)!!
             val childStart = getChildStart(child)
 
             if (childStart <= end) {
@@ -381,7 +381,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         }
 
         while (detachedCount-- > 0) {
-            val child = getChildAt(firstDetachedPos)
+            val child = getChildAt(firstDetachedPos)!!
             removeAndRecycleViewAt(firstDetachedPos, recycler)
             updateEdgesWithRemovedChild(child, direction)
         }
@@ -405,7 +405,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     //  ~ Scroll methods
     //==============================================================================================
 
-    override fun computeVerticalScrollOffset(state: RecyclerView.State?): Int {
+    override fun computeVerticalScrollOffset(state: RecyclerView.State): Int {
         if (childCount == 0) {
             return 0
         }
@@ -413,7 +413,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         return firstVisiblePosition
     }
 
-    override fun computeVerticalScrollExtent(state: RecyclerView.State?): Int {
+    override fun computeVerticalScrollExtent(state: RecyclerView.State): Int {
         return childCount
     }
 
