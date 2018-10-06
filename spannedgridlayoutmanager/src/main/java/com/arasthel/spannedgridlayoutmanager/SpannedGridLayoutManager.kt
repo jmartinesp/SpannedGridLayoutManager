@@ -12,6 +12,7 @@ import android.os.Parcelable
 import android.support.v7.widget.LinearSmoothScroller
 import android.support.v7.widget.RecyclerView
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 
@@ -161,12 +162,14 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
                     removeAndRecycleView(lastAddedView, recycler)
                 }
                 lastAddedView = makeAndAddView(position, Direction.END, recycler)
-                updateEdgesWithNewChild(lastAddedView!!)
+                updateEdgesWithNewChild(lastAddedView)
                 position++
             }
 
             val view = lastAddedView!!
-            val offset = view.top - getTopDecorationHeight(view)
+            val offset = if (orientation == Orientation.VERTICAL)
+                view.top - getTopDecorationHeight(view) else
+                view.left - getLeftDecorationWidth(view)
             removeAndRecycleView(view, recycler)
 
             layoutStart = offset
@@ -176,10 +179,14 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             // Scrolling will add more views at end, so add a few at the beginning
             fillBefore(pendingScrollToPosition - 1, recycler, size)
 
+            recycleChildrenOutOfBounds(Direction.END, recycler)
+
             this.pendingScrollToPosition = null
         } else {
             // Fill from start to visible end
             fillGap(Direction.END, recycler, state)
+
+            recycleChildrenOutOfBounds(Direction.END, recycler)
         }
     }
 
@@ -329,13 +336,13 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected fun recycleChildrenFromStart(direction: Direction, recycler: RecyclerView.Recycler) {
         val childCount = childCount
-        val start = 0
+        val start = getPaddingStartForOrientation()
 
         var detachedCount = 0
 
         for (i in 0 until childCount) {
             val child = getChildAt(i)
-            val childEnd = getChildEnd(child) + getTopDecorationHeight(child) + getBottomDecorationHeight(child)
+            val childEnd = getChildEnd(child)
 
             if (childEnd >= start) {
                 break
@@ -344,7 +351,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             detachedCount++
         }
 
-        while (--detachedCount >= 0) {
+        while (detachedCount-- > 0) {
             val child = getChildAt(0)
             removeAndRecycleView(child, recycler)
             updateEdgesWithRemovedChild(child, direction)
@@ -373,7 +380,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             detachedCount++
         }
 
-        while (--detachedCount >= 0) {
+        while (detachedCount-- > 0) {
             val child = getChildAt(firstDetachedPos)
             removeAndRecycleViewAt(firstDetachedPos, recycler)
             updateEdgesWithRemovedChild(child, direction)
@@ -388,37 +395,9 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         val childEnd = getChildEnd(view) + scroll
 
         if (direction == Direction.END) { // Removed from start
-            var newLayoutStart = childStart
-
-            for (i in (0 until childCount)) {
-                val siblingChild = getChildAt(i)
-
-                val newChildStart = getChildStart(siblingChild) + scroll
-
-                if (newChildStart >= childEnd) { break }
-
-                if (newChildStart > newLayoutStart) {
-                    newLayoutStart = newChildStart
-                }
-            }
-
-            layoutStart = getPaddingStartForOrientation() + newLayoutStart
+            layoutStart = getPaddingStartForOrientation() + childEnd
         } else if (direction == Direction.START) { // Removed from end
-            var newLayoutEnd = childEnd
-
-            for (i in (0 until childCount).reversed()) {
-                val siblingChild = getChildAt(i)
-
-                val newChildEnd = getChildEnd(siblingChild)
-
-                if (newChildEnd <= childStart) { break }
-
-                if (newChildEnd < newLayoutEnd) {
-                    newLayoutEnd = newChildEnd
-                }
-            }
-
-            layoutEnd = getPaddingStartForOrientation() + newLayoutEnd + scroll
+            layoutEnd = getPaddingStartForOrientation() + childStart
         }
     }
 
@@ -485,11 +464,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
         recycleChildrenOutOfBounds(direction, recycler)
 
-        val absDelta = Math.abs(delta)
-        val start = layoutStart - absDelta
-        if (canAddMoreViews(Direction.START, start) || canAddMoreViews(Direction.END, scroll + size + absDelta)) {
-            fillGap(direction, recycler, state)
-        }
+        fillGap(direction, recycler, state)
 
         return delta
     }
@@ -497,7 +472,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     /**
      * Scrolls distance based on orientation. Corrects distance if out of bounds.
      */
-    fun scrollBy(distance: Int, state: RecyclerView.State) {
+    protected fun scrollBy(distance: Int, state: RecyclerView.State) {
         var distance = distance
 
         val paddingEndLayout = getPaddingEndForOrientation()
@@ -570,12 +545,10 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     protected fun fillGap(direction: Direction, recycler: RecyclerView.Recycler, state: RecyclerView.State) {
         val firstPosition = firstVisiblePosition
 
-        val extraSpace = if (direction == Direction.START && firstPosition == 0) 0 else size
-
         if (direction == Direction.END) {
-            fillAfter(firstPosition + childCount, recycler, state, extraSpace)
+            fillAfter(firstPosition + childCount, recycler, state, size)
         } else {
-            fillBefore(firstPosition - 1, recycler, extraSpace)
+            fillBefore(firstPosition - 1, recycler, 0)
         }
     }
 
@@ -587,10 +560,16 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected fun fillBefore(position: Int, recycler: RecyclerView.Recycler, extraSpace: Int) {
         var position = position
-        val limit = getPaddingStartForOrientation() + scroll - extraSpace
+        val limit = getPaddingStartForOrientation() + scroll + extraSpace
 
-        while (canAddMoreViews(Direction.START, limit) && position >= 0) {
+        var startOfLine: Int? = null
+        val isInIncompleteLine: (Int) -> Boolean = {
+            val start = if (orientation == Orientation.VERTICAL) childFrames[it]?.top else childFrames[it]?.left
+            start == startOfLine
+        }
+        while ((canAddMoreViews(Direction.START, limit) || isInIncompleteLine(position)) && position >= 0) {
             makeAndAddView(position, Direction.START, recycler)
+            startOfLine = if (orientation == Orientation.VERTICAL) childFrames[position]?.top else childFrames[position]?.left
             position--
         }
     }
@@ -603,7 +582,9 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected fun fillAfter(position: Int, recycler: RecyclerView.Recycler, state: RecyclerView.State, extraSpace: Int) {
         var position = position
-        val limit = getPaddingStartForOrientation() + scroll + size + extraSpace
+        val itemAtPosition = findViewByPosition(position - 1)
+        val decorTop = if (itemAtPosition != null) getTopDecorationHeight(itemAtPosition) else 0
+        val limit = getPaddingStartForOrientation() + scroll + size + extraSpace + decorTop
 
         while (canAddMoreViews(Direction.END, limit) && position < state.itemCount) {
             makeAndAddView(position, Direction.END, recycler)
@@ -721,25 +702,29 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     //==============================================================================================
 
     override fun onSaveInstanceState(): Parcelable? {
-        if (itemOrderIsStable && childCount > 0) {
-            // Save the actual first visible item
-            val maxTopValue = (0 until childCount).map { getChildAt(it).top }.min()
-            val firstVisibleIndex = (0 until childCount).first { getChildAt(it).top == maxTopValue }
-
-            val firstVisibleItem = getPosition(getChildAt(firstVisibleIndex))
-            val parcelable = SavedState(firstVisibleItem)
-
-            return parcelable
+        return if (itemOrderIsStable && childCount > 0) {
+            logMessage("Saving first visible position: $firstVisiblePosition")
+            SavedState(firstVisiblePosition)
         } else {
-            return null
+            null
         }
     }
 
     override fun onRestoreInstanceState(state: Parcelable) {
+        logMessage("Restoring state")
         val savedState = state as? SavedState
         if (savedState != null) {
             val firstVisibleItem = savedState.firstVisibleItem
             scrollToPosition(firstVisibleItem)
+        }
+    }
+
+    companion object {
+        const val TAG = "SpannedGridLayoutMan"
+        const val DEBUG = false
+
+        fun logMessage(message: String) {
+            if (DEBUG) Log.d(TAG, message)
         }
     }
 
