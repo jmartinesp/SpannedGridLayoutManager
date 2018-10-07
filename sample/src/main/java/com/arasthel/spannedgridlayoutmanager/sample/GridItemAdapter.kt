@@ -26,13 +26,13 @@ class GridItemAdapter: RecyclerView.Adapter<GridItemViewHolder>() {
 
     val colors = arrayOf(Color.RED, Color.GREEN, Color.BLUE, Color.CYAN, Color.DKGRAY, Color.MAGENTA, Color.YELLOW)
 
-    override fun onBindViewHolder(holder: GridItemViewHolder, position: Int) {
-        val width = if (clickedItems[position]) 2 else 1
-        val height = if (clickedItems[position]) 2 else 1
+    override fun onViewAttachedToWindow(holder: GridItemViewHolder) {
+        super.onViewAttachedToWindow(holder)
+
+        val position = holder.adapterPosition
 
         (holder.itemView as? GridItemView)?.setTitle("$position")
-        val spanSize = SpanSize(width, height)
-        holder.itemView.layoutParams = SpanLayoutParams(spanSize)
+
         holder.itemView.setBackgroundColor(
                 colors[position % colors.size]
         )
@@ -41,6 +41,14 @@ class GridItemAdapter: RecyclerView.Adapter<GridItemViewHolder>() {
             clickedItems[position] = !clickedItems[position]
             notifyItemChanged(position)
         }
+    }
+
+    override fun onBindViewHolder(holder: GridItemViewHolder, position: Int) {
+        val width = if (clickedItems[position]) 2 else 1
+        val height = if (clickedItems[position]) 2 else 1
+
+        val spanSize = SpanSize(width, height)
+        holder.itemView.layoutParams = SpanLayoutParams(spanSize)
     }
 
     override fun getItemViewType(position: Int): Int {

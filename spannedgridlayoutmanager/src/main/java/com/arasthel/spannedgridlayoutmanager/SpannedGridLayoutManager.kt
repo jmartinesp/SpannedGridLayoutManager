@@ -155,18 +155,18 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             var lastAddedView: View? = null
             var position = 0
             // Keep adding views until reaching the one needed
-            while (findViewByPosition(pendingScrollToPosition) == null) {
+            for (i in 0 until pendingScrollToPosition) {
                 if (lastAddedView != null) {
                     // Recycle views to reduce RAM usage
                     updateEdgesWithRemovedChild(lastAddedView, Direction.START)
                     removeAndRecycleView(lastAddedView, recycler)
                 }
-                lastAddedView = makeAndAddView(position, Direction.END, recycler)
+                lastAddedView = makeView(position, Direction.END, recycler)
                 updateEdgesWithNewChild(lastAddedView)
                 position++
             }
 
-            val view = lastAddedView!!
+            val view = makeView(pendingScrollToPosition, Direction.END, recycler)
             val offset = if (orientation == Orientation.VERTICAL)
                 view.top - getTopDecorationHeight(view) else
                 view.left - getLeftDecorationWidth(view)
@@ -175,9 +175,6 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             layoutStart = offset
             scrollBy(-offset, state)
             fillAfter(pendingScrollToPosition, recycler, state, size)
-
-            // Scrolling will add more views at end, so add a few at the beginning
-            fillBefore(pendingScrollToPosition - 1, recycler, size)
 
             recycleChildrenOutOfBounds(Direction.END, recycler)
 
@@ -213,7 +210,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         val itemHeight = freeRectsHelper.itemSize
 
         if (view.layoutParams !is SpanLayoutParams) {
-            throw TypeCastException("View LayoutParams must be of type 'SpanLayoutParams'")
+            throw TypeCastException("View LayoutParams must be of type '${SpanLayoutParams::class.java.name}'")
         }
 
         val layoutParams = (view.layoutParams as SpanLayoutParams)
@@ -295,6 +292,14 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         } else {
             addView(view, 0)
         }
+
+        return view
+    }
+
+    protected fun makeView(position: Int, direction: Direction, recycler: RecyclerView.Recycler): View {
+        val view = recycler.getViewForPosition(position)
+        measureChild(position, view)
+        layoutChild(position, view)
 
         return view
     }
