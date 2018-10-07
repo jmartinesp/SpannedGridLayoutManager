@@ -37,7 +37,7 @@ ext {
     siteUrl = 'https://github.com/Arasthel/SpannedGridLayoutManager'
     gitUrl = 'https://github.com/Arasthel/SpannedGridLayoutManager.git'
 
-    libraryVersion = '2.0.3'
+    libraryVersion = '2.0.4'
 
     developerId = 'Arasthel'
     developerName = 'Jorge Martín Epsinosa'

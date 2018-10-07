@@ -14,7 +14,7 @@ Gradle dependency:
 
 ```groovy
 dependencies {
-	implementation 'com.arasthel:spannedgridlayoutmanager:2.0.3'
+	implementation 'com.arasthel:spannedgridlayoutmanager:2.0.4'
 }
 ```
 
@@ -65,6 +65,47 @@ public void onBindViewHolder(ViewHolder holder, int position) {
 }
 ```
 
+### Known issue: the LayoutManager may hang the UI thread when it's recreated
+
+Why does this happen? To restore the *X* scroll position, all views before *X* must be measured and layouted to calculate the scroll offset for the *X* view. This is done by asking the `RecyclerView` to provide the ViewHolders of the items to get their `SpanLayoutParams.spanSize`, which calls both `RecyclerViewAdapter.createViewHolder` and `RecyclerViewAdapter.bindViewHolder`. 
+
+If too much work is done in the `onBindVIewHolder` method, this calculation will become slow and hang the main thread. However, there's a workaround for this behavior:
+
+1. Limit your `onBindViewHolder` method to setting the *spanSize* property if needed, or leave it empty. Example:
+
+```kotlin
+ override fun onBindViewHolder(holder: GridItemViewHolder, position: Int) {
+         val width = if (clickedItems[position]) 2 else 1
+         val height = if (clickedItems[position]) 2 else 1
+ 
+         val spanSize = SpanSize(width, height)
+         holder.itemView.layoutParams = SpanLayoutParams(spanSize)
+     }
+ ```
+ 
+ 2. Move all the code that would actually configure and style your items to `RecyclerView.onViewAttachedToWindow`. Example:
+ 
+ ```kotlin
+ override fun onViewAttachedToWindow(holder: GridItemViewHolder) {
+         super.onViewAttachedToWindow(holder)
+ 
+         val position = holder.adapterPosition
+ 
+         (holder.itemView as? GridItemView)?.setTitle("$position")
+ 
+         holder.itemView.setBackgroundColor(
+                 colors[position % colors.size]
+         )
+ 
+         holder.itemView.setOnClickListener {
+             clickedItems[position] = !clickedItems[position]
+             notifyItemChanged(position)
+         }
+     }
+ ```
+ 
+ This way, the items won't be configured until you actually need them and the layouting process will be fast again.
+ 
 ### About restoring scroll position:
 
 As this *LayoutManager* may change the order in screen of its items, it has some issues with restoring scroll position when the sizes of the items change drastically. To work around this, restoring the scroll position when recreating this *LayoutManager* is disabled by default.
