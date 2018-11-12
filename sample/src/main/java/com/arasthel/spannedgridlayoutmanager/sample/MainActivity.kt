@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.support.v7.widget.RecyclerView
 import com.arasthel.spannedgridlayoutmanager.SpanSize
 import com.arasthel.spannedgridlayoutmanager.SpannedGridLayoutManager
+import com.arasthel.spannedgridlayoutmanager.SpannedGridLayoutManager.Orientation.*
 
 /**
  * Created by Jorge Martín on 24/5/17.
@@ -17,7 +18,7 @@ class MainActivity: android.support.v7.app.AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        val spannedGridLayoutManager = SpannedGridLayoutManager(orientation = SpannedGridLayoutManager.Orientation.HORIZONTAL, spans = 4)
+        val spannedGridLayoutManager = SpannedGridLayoutManager(orientation = VERTICAL, spans = 4)
         spannedGridLayoutManager.itemOrderIsStable = true
 
         recyclerview.layoutManager = spannedGridLayoutManager
@@ -39,6 +40,7 @@ class MainActivity: android.support.v7.app.AppCompatActivity() {
                 SpanSize(1, 1)
             }
         }
+
         recyclerview.adapter = adapter
     }
 

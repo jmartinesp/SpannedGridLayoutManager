@@ -4,9 +4,6 @@ import android.graphics.Color
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
-import com.arasthel.spannedgridlayoutmanager.SpanLayoutParams
-import com.arasthel.spannedgridlayoutmanager.SpanSize
-import java.util.*
 
 /**
  * Created by Jorge Martín on 24/5/17.

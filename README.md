@@ -14,7 +14,7 @@ Gradle dependency:
 
 ```groovy
 dependencies {
-	implementation 'com.arasthel:spannedgridlayoutmanager:2.0.4'
+	implementation 'com.arasthel:spannedgridlayoutmanager:3.0.0'
 }
 ```
 
@@ -29,7 +29,6 @@ When you create a new `SpannedGridLayoutManager` you must provide:
 val spannedGridLayoutManager = SpannedGridLayoutManager(
                 orientation = SpannedGridLayoutManager.Orientation.VERTICAL, 
                 spans = 4)
-recyclerview.layoutManager = spannedGridLayoutManager
 ```
 
 **Java** Example:
@@ -37,80 +36,45 @@ recyclerview.layoutManager = spannedGridLayoutManager
 ```java
 SpannedGridLayoutManager spannedGridLayoutManager = new SpannedGridLayoutManager(
 			SpannedGridLayoutManager.Orientation.VERTICAL, 4);
-recyclerview.setLayoutManager(spannedGridLayoutManager);
 ```
 
 
-To set the `SpanSize` for each view, you would do it on the `RecyclerView.Adapter`. I would do it in `onBindViewHolder` method, since you have access to `position` and can use several sizes depending on the position or your model's data.
+To set the `SpanSize` for each view, you need to use `SpannedGridLayoutManager.SpanSizeLookup`. This class has a lambda that receives an adapter position and must return an `SpanSize`:
 
 **Kotlin:**
 
 ```kotlin
-override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-    val width = 1
-    val height = 2
-
-    holder.itemView.layoutParams = SpanLayoutParams(SpanSize(width, height))
+spannedGridLayoutManager.spanSizeLookup = SpannedGridLayoutManager.SpanSizeLookUp { position -> 
+    SpanSize(2, 2)
 }
+recyclerview.layoutManager = spannedGridLayoutManager
 ```
+
 **Java:**
 
 ```java
-@Override
-public void onBindViewHolder(ViewHolder holder, int position) {
-    int width = 1;
-    int height = 2;
+// If your project has Java 8 support for lambdas
+spannedGridLayoutManager.setSpanSizeLookup(new SpannedGridLayoutManager.SpanSizeLookup({ position ->
+    new SpanSize(2, 2);
+}));
 
-    holder.itemView.setLayoutParams(new SpanLayoutParams(new SpanSize(width, height)));
-}
+// If your project uses Java 6 or 7. Yup, it's ugly as hell
+spannedGridLayoutManager.setSpanSizeLookup(new SpannedGridLayoutManager.SpanSizeLookup(Function1<Integer, SpanSize>({
+  @Override public SpanSize invoke(Integer position) {
+    return new SpanSize(2, 2);
+  }
+})));
+
+recyclerview.setLayoutManager(spannedGridLayoutManager);
 ```
 
-### Known issue: the LayoutManager may hang the UI thread when it's recreated
-
-Why does this happen? To restore the *X* scroll position, all views before *X* must be measured and layouted to calculate the scroll offset for the *X* view. This is done by asking the `RecyclerView` to provide the ViewHolders of the items to get their `SpanLayoutParams.spanSize`, which calls both `RecyclerViewAdapter.createViewHolder` and `RecyclerViewAdapter.bindViewHolder`. 
-
-If too much work is done in the `onBindVIewHolder` method, this calculation will become slow and hang the main thread. However, there's a workaround for this behavior:
-
-1. Limit your `onBindViewHolder` method to setting the *spanSize* property if needed, or leave it empty. Example:
-
-```kotlin
- override fun onBindViewHolder(holder: GridItemViewHolder, position: Int) {
-         val width = if (clickedItems[position]) 2 else 1
-         val height = if (clickedItems[position]) 2 else 1
- 
-         val spanSize = SpanSize(width, height)
-         holder.itemView.layoutParams = SpanLayoutParams(spanSize)
-     }
- ```
- 
- 2. Move all the code that would actually configure and style your items to `RecyclerView.onViewAttachedToWindow`. Example:
- 
- ```kotlin
- override fun onViewAttachedToWindow(holder: GridItemViewHolder) {
-         super.onViewAttachedToWindow(holder)
- 
-         val position = holder.adapterPosition
- 
-         (holder.itemView as? GridItemView)?.setTitle("$position")
- 
-         holder.itemView.setBackgroundColor(
-                 colors[position % colors.size]
-         )
- 
-         holder.itemView.setOnClickListener {
-             clickedItems[position] = !clickedItems[position]
-             notifyItemChanged(position)
-         }
-     }
- ```
- 
- This way, the items won't be configured until you actually need them and the layouting process will be fast again.
+If the logic needed to calculate this values is very complex, they can be cached by setting `spanSizeLookup.usesCache = true` or `spanSizeLookup.setUsesCache(true)`. If you need to invalidate them, just call `spanSizeLookup.invalidateCache()`. 
  
 ### About restoring scroll position:
 
 As this *LayoutManager* may change the order in screen of its items, it has some issues with restoring scroll position when the sizes of the items change drastically. To work around this, restoring the scroll position when recreating this *LayoutManager* is disabled by default.
 
-If you are **sure** that the position of the items won't change much, you can enable it again using:
+If you are fairly sure that the position of the items won't change much, you can enable it again using:
 
 ```kotlin
 spannedLayoutManager.itemOrderIsStable = true
@@ -133,6 +97,14 @@ Due to critical layout issues, the API for using SpanSizes had to change. The on
 
 Just use the new `SpanLayoutParams` instead of generic `RecyclerView.LayoutParams`.
 
+## Migrating from 2.X to 3.X
+
+Sadly, due to more limitations of the initial design and bugs, most of the LayoutManager's layouting and recycling process had to be re-written. This depended on some breaking API changes since otherwise there would have been lots of unnecessary recycling of views and performance loss when the spans are calculated.
+
+Because of this, while you would set the *SpanSizes* using `SpanLayoutParams`, **these are no longer needed**. You can safely delete those from your adapter.
+
+Instead of that, you must use the `SpannedGridLayoutManager.SpanSizeLookup` like you would do with a `GridLayoutManager`. You can find more info on the [Usage section](#usage). 
+
 ## Animations
 
 To have animations as shown in the sample, you must:
@@ -154,6 +126,30 @@ This library uses `Rects` to find the empty gaps and choose where a view will be
 * For each of that subrects, if none of the previously stored **adjacent** free rects and none of the rects in the list of free rects intersects with it, it will be added to this list as a valid free rect.
 
 You can see this code in `SpannedGridLayoutManager`'s `subtract(Rect)` method.
+
+In version 3.0 however, to ensure no layout issues happened, the whole rects are pre-calculated and cached on every relayout of the whole LayoutManager. These are some elapsed time results that I got from testing:
+
+```
+Android emulator: 
+    - 500 items: 10ms
+    - 1000 items: 18ms
+    - 10000 items: 35ms
+    - 50000 items: 128ms
+    
+OnePlus 3T:
+    - 500 items: 12ms
+    - 1000 items: 20ms
+    - 10000 items: 135ms
+    - 50000 items: 530ms
+    
+OnePlus 6T:
+    - 500 items: 5ms
+    - 1000 items: 10ms
+    - 10000 items: 55ms
+    - 50000 items: 200ms
+``` 
+
+They aren't that bad, but they're also not great for huge amounts of items and could cause performance issues if you have infinite scrolling. I will try to improve this and calculate rects by batches, although this might not give exact results in the placement of the views.
 
 ## License - MIT
 

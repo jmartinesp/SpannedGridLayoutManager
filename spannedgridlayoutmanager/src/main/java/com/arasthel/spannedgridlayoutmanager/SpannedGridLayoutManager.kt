@@ -111,6 +111,11 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      * Provides SpanSize values for the LayoutManager. Otherwise they will all be (1, 1).
      */
     var spanSizeLookup: SpanSizeLookup? = null
+        set(newValue) {
+            field = newValue
+            // If the SpanSizeLookup changes, the views need a whole re-layout
+            requestLayout()
+        }
 
     /**
      * SpanSize provider for this LayoutManager.
@@ -191,11 +196,11 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
         layoutStart = getPaddingStartForOrientation()
 
-        if (scroll != 0) {
+        layoutEnd = if (scroll != 0) {
             val currentRow = (scroll - layoutStart) / rectsHelper.itemSize
-            layoutEnd = currentRow * rectsHelper.itemSize
+            currentRow * rectsHelper.itemSize
         } else {
-            layoutEnd = getPaddingEndForOrientation()
+            getPaddingEndForOrientation()
         }
 
         // Clear cache, since layout may change
@@ -204,10 +209,17 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         // If there were any views, detach them so they can be recycled
         detachAndScrapAttachedViews(recycler)
 
+        val start = System.currentTimeMillis()
+
         for (i in 0 until state.itemCount) {
             val spanSize = spanSizeLookup?.getSpanSize(i) ?: SpanSize(1, 1)
             val childRect = rectsHelper.findRect(i, spanSize)
             rectsHelper.pushRect(i, childRect)
+        }
+
+        if (DEBUG) {
+            val elapsed = System.currentTimeMillis() - start
+            debugLog("Elapsed time: $elapsed ms")
         }
 
         // Restore scroll position based on first visible view
@@ -710,7 +722,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
     override fun onSaveInstanceState(): Parcelable? {
         return if (itemOrderIsStable && childCount > 0) {
-            logMessage("Saving first visible position: $firstVisiblePosition")
+            debugLog("Saving first visible position: $firstVisiblePosition")
             SavedState(firstVisiblePosition)
         } else {
             null
@@ -718,7 +730,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     }
 
     override fun onRestoreInstanceState(state: Parcelable) {
-        logMessage("Restoring state")
+        debugLog("Restoring state")
         val savedState = state as? SavedState
         if (savedState != null) {
             val firstVisibleItem = savedState.firstVisibleItem
@@ -728,9 +740,9 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
     companion object {
         const val TAG = "SpannedGridLayoutMan"
-        const val DEBUG = false
+        const val DEBUG = true
 
-        fun logMessage(message: String) {
+        fun debugLog(message: String) {
             if (DEBUG) Log.d(TAG, message)
         }
     }
