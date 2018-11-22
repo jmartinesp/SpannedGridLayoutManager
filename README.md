@@ -59,11 +59,11 @@ spannedGridLayoutManager.setSpanSizeLookup(new SpannedGridLayoutManager.SpanSize
 }));
 
 // If your project uses Java 6 or 7. Yup, it's ugly as hell
-spannedGridLayoutManager.setSpanSizeLookup(new SpannedGridLayoutManager.SpanSizeLookup(Function1<Integer, SpanSize>({
+spannedGridLayoutManager.setSpanSizeLookup(new SpannedGridLayoutManager.SpanSizeLookup(new Function1<Integer, SpanSize>(){
   @Override public SpanSize invoke(Integer position) {
     return new SpanSize(2, 2);
   }
-})));
+}));
 
 recyclerview.setLayoutManager(spannedGridLayoutManager);
 ```
