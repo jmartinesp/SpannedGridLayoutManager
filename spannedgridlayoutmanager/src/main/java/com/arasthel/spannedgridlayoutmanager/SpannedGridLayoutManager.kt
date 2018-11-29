@@ -191,7 +191,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     //==============================================================================================
 
     override fun onLayoutChildren(recycler: RecyclerView.Recycler, state: RecyclerView.State) {
-
+        if (childCount <= 0 && scroll != 0) scroll = 0
         rectsHelper = RectsHelper(this, orientation)
 
         layoutStart = getPaddingStartForOrientation()
