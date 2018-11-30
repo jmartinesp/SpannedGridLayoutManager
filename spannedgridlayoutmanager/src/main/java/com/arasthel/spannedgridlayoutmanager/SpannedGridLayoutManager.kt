@@ -388,7 +388,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
      */
     protected open fun recycleChildrenFromStart(direction: Direction, recycler: RecyclerView.Recycler) {
         val childCount = childCount
-        val start = 0
+        val start = getPaddingStartForOrientation()
 
         val toDetach = mutableListOf<View>()
 
