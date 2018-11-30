@@ -450,18 +450,30 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     //==============================================================================================
 
     override fun computeVerticalScrollOffset(state: RecyclerView.State): Int {
-        if (childCount == 0) {
-            return 0
-        }
+        return computeScrollOffset()
+    }
 
-        return firstVisiblePosition
+    override fun computeHorizontalScrollOffset(state: RecyclerView.State): Int {
+        return computeScrollOffset()
+    }
+
+    private fun computeScrollOffset(): Int {
+        return if (childCount == 0) 0 else firstVisiblePosition
     }
 
     override fun computeVerticalScrollExtent(state: RecyclerView.State): Int {
         return childCount
     }
 
+    override fun computeHorizontalScrollExtent(state: RecyclerView.State): Int {
+        return childCount
+    }
+
     override fun computeVerticalScrollRange(state: RecyclerView.State): Int {
+        return state.itemCount
+    }
+
+    override fun computeHorizontalScrollRange(state: RecyclerView.State): Int {
         return state.itemCount
     }
 
@@ -500,7 +512,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
             return 0
         }
 
-        scrollBy(-delta, state)
+        val correctedDistance = scrollBy(-delta, state)
 
         val direction = if (delta > 0) Direction.END else Direction.START
 
@@ -508,13 +520,13 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
         fillGap(direction, recycler, state)
 
-        return delta
+        return -correctedDistance
     }
 
     /**
      * Scrolls distance based on orientation. Corrects distance if out of bounds.
      */
-    protected open fun scrollBy(distance: Int, state: RecyclerView.State) {
+    protected open fun scrollBy(distance: Int, state: RecyclerView.State): Int {
         val paddingEndLayout = getPaddingEndForOrientation()
 
         val start = 0
@@ -541,6 +553,8 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         } else{
             offsetChildrenHorizontal(correctedDistance)
         }
+
+        return correctedDistance
     }
 
     override fun scrollToPosition(position: Int) {
@@ -742,7 +756,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
     companion object {
         const val TAG = "SpannedGridLayoutMan"
-        const val DEBUG = true
+        const val DEBUG = false
 
         fun debugLog(message: String) {
             if (DEBUG) Log.d(TAG, message)
