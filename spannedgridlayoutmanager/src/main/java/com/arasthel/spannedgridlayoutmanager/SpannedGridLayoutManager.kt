@@ -191,7 +191,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
     //==============================================================================================
 
     override fun onLayoutChildren(recycler: RecyclerView.Recycler, state: RecyclerView.State) {
-        if (childCount == 0 && scroll != 0) scroll = 0
+
         rectsHelper = RectsHelper(this, orientation)
 
         layoutStart = getPaddingStartForOrientation()
@@ -224,11 +224,13 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
 
         // Restore scroll position based on first visible view
         val pendingScrollToPosition = pendingScrollToPosition
-        if (pendingScrollToPosition != null && pendingScrollToPosition >= spans) {
+        if (itemCount != 0 && pendingScrollToPosition != null && pendingScrollToPosition >= spans) {
 
-            val currentRow = rectsHelper.rows.filter { (_, value) -> value.contains(pendingScrollToPosition) }.keys.first()
+            val currentRow = rectsHelper.rows.filter { (_, value) -> value.contains(pendingScrollToPosition) }.keys.firstOrNull()
 
-            scroll = getPaddingStartForOrientation() + (currentRow * rectsHelper.itemSize)
+            if (currentRow != null) {
+                scroll = getPaddingStartForOrientation() + (currentRow * rectsHelper.itemSize)
+            }
 
             this.pendingScrollToPosition = null
         }
@@ -241,7 +243,7 @@ open class SpannedGridLayoutManager(val orientation: Orientation,
         // Check if after changes in layout we aren't out of its bounds
         val overScroll = scroll + size - layoutEnd - getPaddingEndForOrientation()
         val isLastItemInScreen = (0 until childCount).map { getPosition(getChildAt(it)!!) }.contains(itemCount - 1)
-        val allItemsInScreen = firstVisiblePosition == 0 && isLastItemInScreen
+        val allItemsInScreen = itemCount == 0 || (firstVisiblePosition == 0 && isLastItemInScreen)
         if (!allItemsInScreen && overScroll > 0) {
             // If we are, fix it
             scrollBy(overScroll, state)
